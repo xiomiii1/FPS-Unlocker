@@ -1,0 +1,16 @@
+{
+  "source_archive": "libminecraftpe.zip",
+  "file_count": 1,
+  "fps_related_identifiers": [
+    "MAX_FRAMERATE",
+    "MAX_FRAMERATE_VIBRANT_VISUALS",
+    "VSYNC",
+    "getRefreshRate"
+  ],
+  "files": [
+    [
+      "libminecraftpe.so",
+      313870688
+    ]
+  ]
+}
