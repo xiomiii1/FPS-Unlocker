@@ -40,13 +40,13 @@ jobs:
         run: |
           SOURCE_PATH="${SOURCE#./}"
 
-          cat > CMakeLists.txt <<EOF
+          cat > CMakeLists.txt <<'EOF'
           cmake_minimum_required(VERSION 3.22.1)
 
           project(FPSUnlocker)
 
           add_library(FPSUnlocker SHARED
-              "\${SOURCE_PATH}"
+              "$SOURCE_PATH"
           )
 
           target_compile_features(FPSUnlocker PRIVATE cxx_std_17)
@@ -62,6 +62,9 @@ jobs:
               -Wl,--gc-sections
           )
           EOF
+
+          # Replace SOURCE_PATH placeholder with actual value
+          sed -i "s|\$SOURCE_PATH|$SOURCE_PATH|g" CMakeLists.txt
 
       - name: Configure ARM64
         run: |
