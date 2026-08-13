@@ -1,0 +1,73 @@
+name: Build FPS Unlocker
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Android NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK
+        run: |
+          sdkmanager "ndk;27.2.12479018"
+
+      - name: Configure Android NDK
+        run: |
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> $GITHUB_ENV
+
+      - name: Create CMake project
+        run: |
+          cat > CMakeLists.txt <<'EOF'
+          cmake_minimum_required(VERSION 3.22.1)
+
+          project(FPSUnlocker)
+
+          add_library(FPSUnlocker SHARED
+              FPS-Unlocker/fps_unlocker.cpp
+          )
+
+          target_compile_features(FPSUnlocker PRIVATE cxx_std_17)
+
+          target_compile_options(FPSUnlocker PRIVATE
+              -O2
+              -fvisibility=hidden
+              -ffunction-sections
+              -fdata-sections
+          )
+
+          target_link_options(FPSUnlocker PRIVATE
+              -Wl,--gc-sections
+          )
+          EOF
+
+      - name: Configure ARM64
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p output/arm64-v8a
+          cp build/libFPSUnlocker.so output/arm64-v8a/
+
+      - name: Upload .so
+        uses: actions/upload-artifact@v4
+        with:
+          name: FPS-Unlocker-arm64-v8a
+          path: output/
